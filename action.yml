@@ -30,7 +30,7 @@ inputs:
 # Define your outputs here.
 outputs:
   rev_is_changed:
-    description: 'Your output description here'
+    description: 'Status of changing version'
 
 runs:
   using: node20
