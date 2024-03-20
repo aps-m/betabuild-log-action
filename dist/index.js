@@ -29177,7 +29177,7 @@ async function run() {
             core.setFailed('Cannot get repo name and owner');
         }
         console.log(`Set action result (revision_is_changed = ${StoreResult.Rev_is_changed})`);
-        core.setOutput('rev_is_changed', String(StoreResult.Rev_is_changed));
+        core.setOutput('rev_is_changed', StoreResult.Rev_is_changed);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
