@@ -22,6 +22,11 @@ inputs:
     description: 'Tag name for storing'
     required: true
 
+  size:
+    description: 'Maximum store array items'
+    required: true
+    default: 350
+
 # Define your outputs here.
 outputs:
   rev_is_changed:

@@ -13,17 +13,19 @@ export async function run(): Promise<void> {
     const repo_token: string = core.getInput('repo_token')
     const var_name: string = core.getInput('var_name')
     const tag_name: string = core.getInput('tag_name')
-    const var_def_value = '0.0.0'
+    const size: number = Number(core.getInput('size'))
+    const var_def_value = 'init_item'
 
     const repo_owner = github.context.payload.repository?.owner.login
     const repo_name = github.context.payload.repository?.name
 
-    console.log(`Var name: ${var_name}`)
+    let StoreResult: any
 
     //let result
 
     if (repo_owner !== undefined && repo_name !== undefined) {
       let VariableIsExist = false
+      let VariableValue = ''
 
       await GetVariable(var_name, repo_token, repo_owner, repo_name).then(
         result => {
@@ -32,6 +34,7 @@ export async function run(): Promise<void> {
             //console.log(result.data.value)
             console.log(`Variable value is ${result.data.value}`)
             VariableIsExist = true
+            VariableValue = result.data.value
           }
         },
         err => {
@@ -54,6 +57,8 @@ export async function run(): Promise<void> {
               console.log(
                 `Variable "${var_name}" was created with value "${var_def_value}"!`
               )
+
+              VariableValue = var_def_value
             }
           },
           err => {
@@ -63,20 +68,38 @@ export async function run(): Promise<void> {
           }
         )
       }
+
+      StoreResult = HandleStore(VariableValue, tag_name, size)
+
+      await UpdateVariable(
+        StoreResult.Value,
+        var_name,
+        repo_token,
+        repo_owner,
+        repo_name
+      ).then(
+        result => {
+          // eslint-disable-next-line no-console
+          if (result != null) {
+            //console.log(result.data.value)
+            console.log(`Variable "${var_name}" was updated succesfully!`)
+          }
+        },
+        err => {
+          console.log('Error of update variable')
+          console.log(err)
+          core.setFailed(err)
+        }
+      )
     } else {
       core.setFailed('Cannot get repo name and owner')
     }
 
-    console.log('This indicates that all jobs finished')
+    console.log(
+      `Set action result (revision_is_changed = ${StoreResult.Rev_is_changed}`
+    )
 
-    // // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    // core.debug(`Waiting ${ms} milliseconds ...`)
-    // // Log the current timestamp, wait, then log the new timestamp
-    // core.debug(new Date().toTimeString())
-    // await wait(parseInt(ms, 10))
-    // core.debug(new Date().toTimeString())
-    // // Set outputs for other workflow steps to use
-    // core.setOutput('time', new Date().toTimeString())
+    core.setOutput('rev_is_changed', StoreResult.Rev_is_changed)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

@@ -19,7 +19,7 @@ export function HandleStore(
   current_val: string,
   version_val: string,
   limit = 150
-): object {
+): any {
   let rev_changed = true
 
   let arr: string[] = []
