@@ -101,7 +101,7 @@ export async function run(): Promise<void> {
     }
 
     console.log(
-      `Set action result (revision_is_changed = ${StoreResult.Rev_is_changed}`
+      `Set action result (revision_is_changed = ${StoreResult.Rev_is_changed})`
     )
 
     core.setOutput('rev_is_changed', String(StoreResult.Rev_is_changed))
