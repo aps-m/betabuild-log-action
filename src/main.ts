@@ -23,44 +23,46 @@ export async function run(): Promise<void> {
     //let result
 
     if (repo_owner !== undefined && repo_name !== undefined) {
+      let VariableIsExist = false
+
       await GetVariable(var_name, repo_token, repo_owner, repo_name).then(
         result => {
           // eslint-disable-next-line no-console
           if (result != null) {
             //console.log(result.data.value)
             console.log(`Variable value is ${result.data.value}`)
+            VariableIsExist = true
           }
         },
         err => {
           console.log('Variable is no exist')
-
-          CreateVariable(
-            var_name,
-            var_def_value,
-            repo_token,
-            repo_owner,
-            repo_name
-          ).then(
-            result => {
-              // eslint-disable-next-line no-console
-              if (result != null) {
-                //console.log(result.data.value)
-                console.log(
-                  `Variable "${var_name}" was created with value "${var_def_value}"!`
-                )
-              }
-            },
-            err => {
-              console.log('Error of create var')
-              console.log(err)
-              core.setFailed(err)
-            }
-          )
-          //eslint-disable-next-line no-console
-          //core.setFailed(err.message)
-          //console.error(err)
         }
       )
+
+      if (!VariableIsExist) {
+        await CreateVariable(
+          var_name,
+          var_def_value,
+          repo_token,
+          repo_owner,
+          repo_name
+        ).then(
+          result => {
+            // eslint-disable-next-line no-console
+            if (result != null) {
+              //console.log(result.data.value)
+              console.log(
+                `Variable "${var_name}" was created with value "${var_def_value}"!`
+              )
+            }
+          },
+          err => {
+            console.log('Error of create var')
+            console.log(err)
+            core.setFailed(err)
+          }
+        )
+      }
     } else {
       core.setFailed('Cannot get repo name and owner')
     }

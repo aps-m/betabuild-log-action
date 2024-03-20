@@ -29067,15 +29067,19 @@ async function run() {
         console.log(`Var name: ${var_name}`);
         //let result
         if (repo_owner !== undefined && repo_name !== undefined) {
+            let VariableIsExist = false;
             await (0, github_varapi_1.GetVariable)(var_name, repo_token, repo_owner, repo_name).then(result => {
                 // eslint-disable-next-line no-console
                 if (result != null) {
                     //console.log(result.data.value)
                     console.log(`Variable value is ${result.data.value}`);
+                    VariableIsExist = true;
                 }
             }, err => {
                 console.log('Variable is no exist');
-                (0, github_varapi_1.CreateVariable)(var_name, var_def_value, repo_token, repo_owner, repo_name).then(result => {
+            });
+            if (!VariableIsExist) {
+                await (0, github_varapi_1.CreateVariable)(var_name, var_def_value, repo_token, repo_owner, repo_name).then(result => {
                     // eslint-disable-next-line no-console
                     if (result != null) {
                         //console.log(result.data.value)
@@ -29086,10 +29090,7 @@ async function run() {
                     console.log(err);
                     core.setFailed(err);
                 });
-                //eslint-disable-next-line no-console
-                //core.setFailed(err.message)
-                //console.error(err)
-            });
+            }
         }
         else {
             core.setFailed('Cannot get repo name and owner');
