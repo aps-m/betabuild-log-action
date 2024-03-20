@@ -62,7 +62,7 @@ export async function run(): Promise<void> {
             }
           },
           err => {
-            console.log('Error of create var')
+            console.log(`Error of create variable "${var_name}"`)
             console.log(err)
             core.setFailed(err)
           }
@@ -71,26 +71,31 @@ export async function run(): Promise<void> {
 
       StoreResult = HandleStore(VariableValue, tag_name, size)
 
-      await UpdateVariable(
-        StoreResult.Value,
-        var_name,
-        repo_token,
-        repo_owner,
-        repo_name
-      ).then(
-        result => {
-          // eslint-disable-next-line no-console
-          if (result != null) {
-            //console.log(result.data.value)
-            console.log(`Variable "${var_name}" was updated succesfully!`)
+      if (StoreResult.Rev_is_changed) {
+        console.log('New revision was detected, starting variable updating...')
+        await UpdateVariable(
+          StoreResult.Value,
+          var_name,
+          repo_token,
+          repo_owner,
+          repo_name
+        ).then(
+          result => {
+            // eslint-disable-next-line no-console
+            if (result != null) {
+              //console.log(result.data.value)
+              console.log(`Variable "${var_name}" was updated succesfully!`)
+            }
+          },
+          err => {
+            console.log('Error of update variable')
+            console.log(err)
+            core.setFailed(err)
           }
-        },
-        err => {
-          console.log('Error of update variable')
-          console.log(err)
-          core.setFailed(err)
-        }
-      )
+        )
+      } else {
+        console.log('Defined version already exist in revision array')
+      }
     } else {
       core.setFailed('Cannot get repo name and owner')
     }

@@ -29149,23 +29149,29 @@ async function run() {
                         VariableValue = var_def_value;
                     }
                 }, err => {
-                    console.log('Error of create var');
+                    console.log(`Error of create variable "${var_name}"`);
                     console.log(err);
                     core.setFailed(err);
                 });
             }
             StoreResult = (0, betabuild_store_1.HandleStore)(VariableValue, tag_name, size);
-            await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then(result => {
-                // eslint-disable-next-line no-console
-                if (result != null) {
-                    //console.log(result.data.value)
-                    console.log(`Variable "${var_name}" was updated succesfully!`);
-                }
-            }, err => {
-                console.log('Error of update variable');
-                console.log(err);
-                core.setFailed(err);
-            });
+            if (StoreResult.Rev_is_changed) {
+                console.log('New revision was detected, starting variable updating...');
+                await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then(result => {
+                    // eslint-disable-next-line no-console
+                    if (result != null) {
+                        //console.log(result.data.value)
+                        console.log(`Variable "${var_name}" was updated succesfully!`);
+                    }
+                }, err => {
+                    console.log('Error of update variable');
+                    console.log(err);
+                    core.setFailed(err);
+                });
+            }
+            else {
+                console.log('Defined version already exist in revision array');
+            }
         }
         else {
             core.setFailed('Cannot get repo name and owner');
