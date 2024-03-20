@@ -104,7 +104,7 @@ export async function run(): Promise<void> {
       `Set action result (revision_is_changed = ${StoreResult.Rev_is_changed}`
     )
 
-    core.setOutput('rev_is_changed', StoreResult.Rev_is_changed)
+    core.setOutput('rev_is_changed', String(StoreResult.Rev_is_changed))
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)
