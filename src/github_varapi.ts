@@ -1,5 +1,3 @@
-import * as core from '@actions/core'
-
 // import * as github from '@actions/github'
 
 import { Octokit } from '@octokit/core'
@@ -10,7 +8,7 @@ export function CreateVariable(
   token: string,
   owner: string,
   repository: string
-) {
+): object {
   const octokit = new Octokit({ auth: token })
 
   return octokit.request(
@@ -31,7 +29,7 @@ export function UpdateVariable(
   token: string,
   owner: string,
   repository: string
-) {
+): object {
   const octokit = new Octokit({ auth: token })
 
   return octokit.request(
@@ -50,7 +48,7 @@ export function GetVariable(
   token: string,
   owner_str: string,
   repository: string
-) {
+): object {
   //let octokit = github.getOctokit(token)
 
   const octokit = new Octokit({ auth: token })

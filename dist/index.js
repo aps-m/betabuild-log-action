@@ -24742,7 +24742,7 @@ const core = __importStar(__nccwpck_require__(2186));
  */
 async function run() {
     try {
-        const ms = core.getInput('milliseconds');
+        //const ms: string = core.getInput('milliseconds')
         // // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
         // core.debug(`Waiting ${ms} milliseconds ...`)
         // // Log the current timestamp, wait, then log the new timestamp
