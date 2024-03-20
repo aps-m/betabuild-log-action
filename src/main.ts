@@ -31,7 +31,7 @@ export async function run(): Promise<void> {
         err => {
           console.log('Variable is no exist')
 
-          CreateVariable(var_name, '', repo_token, repo_owner, repo_name).then(
+          CreateVariable(var_name, '0.0.0', repo_token, repo_owner, repo_name).then(
             result => {
               // eslint-disable-next-line no-console
               if (result != null) {
