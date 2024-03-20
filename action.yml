@@ -1,22 +1,30 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Rev store action'
+description: 'Provide storing mechanism for beta releases'
+author: 'APS'
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
-branding:
-  icon: 'heart'
-  color: 'red'
+# # Add your action's branding here. This will appear on the GitHub Marketplace.
+# branding:
+#   icon: 'heart'
+#   color: 'red'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  repo_token:
+    description: 'Token for variable access'
     required: true
-    default: '1000'
+
+  var_name:
+    description: 'Variable name for storing'
+    required: true
+    default: 'REV'
+
+  tag_name:
+    description: 'Tag name for storing'
+    required: true
 
 # Define your outputs here.
 outputs:
-  time:
+  rev_is_changed:
     description: 'Your output description here'
 
 runs:

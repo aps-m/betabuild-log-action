@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 
 /**
  * The main function for the action.
@@ -6,7 +7,13 @@ import * as core from '@actions/core'
  */
 export async function run(): Promise<void> {
   try {
-    //const ms: string = core.getInput('milliseconds')
+    const repo_token: string = core.getInput('repo_token')
+    const var_name: string = core.getInput('var_name')
+    const tag_name: string = core.getInput('tag_name')
+
+    console.log(github.context.payload.repository?.owner.login)
+    console.log(github.context.payload.repository?.name)
+
     // // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
     // core.debug(`Waiting ${ms} milliseconds ...`)
     // // Log the current timestamp, wait, then log the new timestamp
