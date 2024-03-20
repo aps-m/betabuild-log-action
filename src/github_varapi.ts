@@ -8,7 +8,7 @@ export function CreateVariable(
   token: string,
   owner: string,
   repository: string
-){
+) {
   const octokit = new Octokit({ auth: token })
 
   return octokit.request(
@@ -49,7 +49,6 @@ export function GetVariable(
   owner_str: string,
   repository: string
 ) {
-
   const octokit = new Octokit({ auth: token })
 
   return octokit.request(
