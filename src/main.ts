@@ -17,6 +17,8 @@ export async function run(): Promise<void> {
     const repo_owner = github.context.payload.repository?.owner.login
     const repo_name = github.context.payload.repository?.name
 
+    console.log(`Var name: ${var_name}`)
+
     //let result
 
     if (repo_owner !== undefined && repo_name !== undefined) {
@@ -31,18 +33,18 @@ export async function run(): Promise<void> {
         err => {
           console.log('Variable is no exist')
 
-          CreateVariable(var_name, '0.0.0', repo_token, repo_owner, repo_name).then(
-            result => {
-              // eslint-disable-next-line no-console
-              if (result != null) {
-                //console.log(result.data.value)
-                console.log(`Variable was created`)
-              }
-            },
-            err => {
-              core.setFailed(err)
-            }
-          )
+          // CreateVariable(var_name, '0.0.0', repo_token, repo_owner, repo_name).then(
+          //   result => {
+          //     // eslint-disable-next-line no-console
+          //     if (result != null) {
+          //       //console.log(result.data.value)
+          //       console.log(`Variable was created`)
+          //     }
+          //   },
+          //   err => {
+          //     core.setFailed(err)
+          //   }
+          // )
           // eslint-disable-next-line no-console
           // core.setFailed(err.message)
           // console.error(err)

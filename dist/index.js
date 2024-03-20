@@ -29015,6 +29015,18 @@ function GetVariable(var_name, token, owner_str, repository) {
     });
 }
 exports.GetVariable = GetVariable;
+// CreateVariable('TEST', '0.0.0', repo_token, repo_owner, repo_name).then(
+//   result => {
+//     // eslint-disable-next-line no-console
+//     if (result != null) {
+//       //console.log(result.data.value)
+//       console.log(`Variable was created`)
+//     }
+//   },
+//   err => {
+//     core.setFailed(err)
+//   }
+// )
 
 
 /***/ }),
@@ -29063,6 +29075,7 @@ async function run() {
         const tag_name = core.getInput('tag_name');
         const repo_owner = github.context.payload.repository?.owner.login;
         const repo_name = github.context.payload.repository?.name;
+        console.log(`Var name: ${var_name}`);
         //let result
         if (repo_owner !== undefined && repo_name !== undefined) {
             (0, github_varapi_1.GetVariable)(var_name, repo_token, repo_owner, repo_name).then(result => {
@@ -29073,15 +29086,18 @@ async function run() {
                 }
             }, err => {
                 console.log('Variable is no exist');
-                (0, github_varapi_1.CreateVariable)(var_name, '', repo_token, repo_owner, repo_name).then(result => {
-                    // eslint-disable-next-line no-console
-                    if (result != null) {
-                        //console.log(result.data.value)
-                        console.log(`Variable was created`);
-                    }
-                }, err => {
-                    core.setFailed(err);
-                });
+                // CreateVariable(var_name, '0.0.0', repo_token, repo_owner, repo_name).then(
+                //   result => {
+                //     // eslint-disable-next-line no-console
+                //     if (result != null) {
+                //       //console.log(result.data.value)
+                //       console.log(`Variable was created`)
+                //     }
+                //   },
+                //   err => {
+                //     core.setFailed(err)
+                //   }
+                // )
                 // eslint-disable-next-line no-console
                 // core.setFailed(err.message)
                 // console.error(err)
