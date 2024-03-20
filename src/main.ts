@@ -23,7 +23,7 @@ export async function run(): Promise<void> {
     //let result
 
     if (repo_owner !== undefined && repo_name !== undefined) {
-      GetVariable(var_name, repo_token, repo_owner, repo_name).then(
+      await GetVariable(var_name, repo_token, repo_owner, repo_name).then(
         result => {
           // eslint-disable-next-line no-console
           if (result != null) {

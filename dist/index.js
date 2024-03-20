@@ -29067,7 +29067,7 @@ async function run() {
         console.log(`Var name: ${var_name}`);
         //let result
         if (repo_owner !== undefined && repo_name !== undefined) {
-            (0, github_varapi_1.GetVariable)(var_name, repo_token, repo_owner, repo_name).then(result => {
+            await (0, github_varapi_1.GetVariable)(var_name, repo_token, repo_owner, repo_name).then(result => {
                 // eslint-disable-next-line no-console
                 if (result != null) {
                     //console.log(result.data.value)
