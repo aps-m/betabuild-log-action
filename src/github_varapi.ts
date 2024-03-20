@@ -60,16 +60,3 @@ export function GetVariable(
     }
   )
 }
-
-// CreateVariable('TEST', '0.0.0', repo_token, repo_owner, repo_name).then(
-//   result => {
-//     // eslint-disable-next-line no-console
-//     if (result != null) {
-//       //console.log(result.data.value)
-//       console.log(`Variable was created`)
-//     }
-//   },
-//   err => {
-//     core.setFailed(err)
-//   }
-// )
