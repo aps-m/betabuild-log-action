@@ -28976,6 +28976,49 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 4445:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+// import * as github from '@actions/github'
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.GetVariable = exports.UpdateVariable = exports.CreateVariable = void 0;
+const core_1 = __nccwpck_require__(6762);
+function CreateVariable(var_name, data, token, owner, repository) {
+    const octokit = new core_1.Octokit({ auth: token });
+    return octokit.request(`POST /repos/${owner}/${repository}/actions/variables`, {
+        name: var_name,
+        value: data,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    });
+}
+exports.CreateVariable = CreateVariable;
+function UpdateVariable(data, var_name, token, owner, repository) {
+    const octokit = new core_1.Octokit({ auth: token });
+    return octokit.request(`PATCH /repos/${owner}/${repository}/actions/variables/${var_name}`, {
+        value: data,
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    });
+}
+exports.UpdateVariable = UpdateVariable;
+function GetVariable(var_name, token, owner_str, repository) {
+    const octokit = new core_1.Octokit({ auth: token });
+    return octokit.request(`GET /repos/${owner_str}/${repository}/actions/variables/${var_name}`, {
+        headers: {
+            'X-GitHub-Api-Version': '2022-11-28'
+        }
+    });
+}
+exports.GetVariable = GetVariable;
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -29008,6 +29051,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+const github_varapi_1 = __nccwpck_require__(4445);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -29017,8 +29061,35 @@ async function run() {
         const repo_token = core.getInput('repo_token');
         const var_name = core.getInput('var_name');
         const tag_name = core.getInput('tag_name');
-        console.log(github.context.payload.repository?.owner.login);
-        console.log(github.context.payload.repository?.name);
+        const repo_owner = github.context.payload.repository?.owner.login;
+        const repo_name = github.context.payload.repository?.name;
+        //let result
+        if (repo_owner !== undefined && repo_name !== undefined) {
+            (0, github_varapi_1.GetVariable)(var_name, repo_token, repo_owner, repo_name).then(result => {
+                // eslint-disable-next-line no-console
+                if (result != null) {
+                    //console.log(result.data.value)
+                    console.log(`Variable value is ${result.data.value}`);
+                }
+            }, err => {
+                console.log('Variable is no exist');
+                (0, github_varapi_1.CreateVariable)(var_name, '', repo_token, repo_owner, repo_name).then(result => {
+                    // eslint-disable-next-line no-console
+                    if (result != null) {
+                        //console.log(result.data.value)
+                        console.log(`Variable was created`);
+                    }
+                }, err => {
+                    core.setFailed(err);
+                });
+                // eslint-disable-next-line no-console
+                // core.setFailed(err.message)
+                // console.error(err)
+            });
+        }
+        else {
+            core.setFailed('Cannot get repo name and owner');
+        }
         // // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
         // core.debug(`Waiting ${ms} milliseconds ...`)
         // // Log the current timestamp, wait, then log the new timestamp

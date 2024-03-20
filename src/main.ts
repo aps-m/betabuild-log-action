@@ -1,6 +1,9 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 
+import { CreateVariable, GetVariable, UpdateVariable } from './github_varapi'
+import { HandleStore } from './betabuild_store'
+
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -11,8 +14,43 @@ export async function run(): Promise<void> {
     const var_name: string = core.getInput('var_name')
     const tag_name: string = core.getInput('tag_name')
 
-    console.log(github.context.payload.repository?.owner.login)
-    console.log(github.context.payload.repository?.name)
+    const repo_owner = github.context.payload.repository?.owner.login
+    const repo_name = github.context.payload.repository?.name
+
+    //let result
+
+    if (repo_owner !== undefined && repo_name !== undefined) {
+      GetVariable(var_name, repo_token, repo_owner, repo_name).then(
+        result => {
+          // eslint-disable-next-line no-console
+          if (result != null) {
+            //console.log(result.data.value)
+            console.log(`Variable value is ${result.data.value}`)
+          }
+        },
+        err => {
+          console.log('Variable is no exist')
+
+          CreateVariable(var_name, '', repo_token, repo_owner, repo_name).then(
+            result => {
+              // eslint-disable-next-line no-console
+              if (result != null) {
+                //console.log(result.data.value)
+                console.log(`Variable was created`)
+              }
+            },
+            err => {
+              core.setFailed(err)
+            }
+          )
+          // eslint-disable-next-line no-console
+          // core.setFailed(err.message)
+          // console.error(err)
+        }
+      )
+    } else {
+      core.setFailed('Cannot get repo name and owner')
+    }
 
     // // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
     // core.debug(`Waiting ${ms} milliseconds ...`)
