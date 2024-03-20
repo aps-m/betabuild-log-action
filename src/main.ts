@@ -13,6 +13,7 @@ export async function run(): Promise<void> {
     const repo_token: string = core.getInput('repo_token')
     const var_name: string = core.getInput('var_name')
     const tag_name: string = core.getInput('tag_name')
+    const var_def_value = '0.0.0'
 
     const repo_owner = github.context.payload.repository?.owner.login
     const repo_name = github.context.payload.repository?.name
@@ -35,7 +36,7 @@ export async function run(): Promise<void> {
 
           CreateVariable(
             var_name,
-            '0.0.0',
+            var_def_value,
             repo_token,
             repo_owner,
             repo_name
@@ -44,7 +45,9 @@ export async function run(): Promise<void> {
               // eslint-disable-next-line no-console
               if (result != null) {
                 //console.log(result.data.value)
-                console.log(`Variable was created`)
+                console.log(
+                  `Variable "${var_name}" was created with value "${var_def_value}"!`
+                )
               }
             },
             err => {

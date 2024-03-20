@@ -29061,6 +29061,7 @@ async function run() {
         const repo_token = core.getInput('repo_token');
         const var_name = core.getInput('var_name');
         const tag_name = core.getInput('tag_name');
+        const var_def_value = '0.0.0';
         const repo_owner = github.context.payload.repository?.owner.login;
         const repo_name = github.context.payload.repository?.name;
         console.log(`Var name: ${var_name}`);
@@ -29074,11 +29075,11 @@ async function run() {
                 }
             }, err => {
                 console.log('Variable is no exist');
-                (0, github_varapi_1.CreateVariable)(var_name, '0.0.0', repo_token, repo_owner, repo_name).then(result => {
+                (0, github_varapi_1.CreateVariable)(var_name, var_def_value, repo_token, repo_owner, repo_name).then(result => {
                     // eslint-disable-next-line no-console
                     if (result != null) {
                         //console.log(result.data.value)
-                        console.log(`Variable was created`);
+                        console.log(`Variable "${var_name}" was created with value "${var_def_value}"!`);
                     }
                 }, err => {
                     console.log('Error of create var');
