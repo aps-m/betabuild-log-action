@@ -27,6 +27,11 @@ inputs:
     required: true
     default: 350
 
+  need_to_update:
+    description: 'Need to update revisiob journal'
+    required: true
+    default: true
+
 # Define your outputs here.
 outputs:
   rev_is_changed:

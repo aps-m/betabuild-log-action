@@ -29121,6 +29121,7 @@ async function run() {
         const var_name = core.getInput('var_name');
         const tag_name = core.getInput('tag_name');
         const size = Number(core.getInput('size'));
+        const need_to_update = core.getInput('need_to_update');
         const var_def_value = 'init_item';
         const repo_owner = github.context.payload.repository?.owner.login;
         const repo_name = github.context.payload.repository?.name;
@@ -29156,18 +29157,21 @@ async function run() {
             }
             StoreResult = (0, betabuild_store_1.HandleStore)(VariableValue, tag_name, size);
             if (StoreResult.Rev_is_changed) {
-                console.log('New revision was detected, starting variable updating...');
-                await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then(result => {
-                    // eslint-disable-next-line no-console
-                    if (result != null) {
-                        //console.log(result.data.value)
-                        console.log(`Variable "${var_name}" was updated succesfully!`);
-                    }
-                }, err => {
-                    console.log('Error of update variable');
-                    console.log(err);
-                    core.setFailed(err);
-                });
+                console.log(`New revision was detected, flag need_to_update = ${need_to_update}`);
+                if (need_to_update.toLowerCase() === 'true') {
+                    console.log('Starting variable updating...');
+                    await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then(result => {
+                        // eslint-disable-next-line no-console
+                        if (result != null) {
+                            //console.log(result.data.value)
+                            console.log(`Variable "${var_name}" was updated succesfully!`);
+                        }
+                    }, err => {
+                        console.log('Error of update variable');
+                        console.log(err);
+                        core.setFailed(err);
+                    });
+                }
             }
             else {
                 console.log('Defined version already exist in revision array');
