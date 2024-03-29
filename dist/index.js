@@ -29180,7 +29180,7 @@ async function run() {
                     console.log(`Request for delete existing revision...`);
                 }
                 else {
-                    console.log(`Request for add new revision revision...`);
+                    console.log(`Request for add new revision...`);
                 }
                 // if (need_to_update.toLowerCase() === 'true') {
                 console.log('Starting variable updating...');
