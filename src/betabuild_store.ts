@@ -18,9 +18,14 @@ function ArrToStr(array: string[]): string {
 export function HandleStore(
   current_val: string,
   version_val: string,
-  limit = 150
+  limit = 150,
+  remove_request: boolean = false
 ): any {
   let rev_changed = true
+
+  if (remove_request) {
+    rev_changed = false
+  }
 
   let arr: string[] = []
 
@@ -29,20 +34,34 @@ export function HandleStore(
       arr = current_val.split(';')
       for (const item of arr) {
         if (version_val === item) {
-          rev_changed = false
+          if (remove_request) {
+            const index = arr.indexOf(item, 0)
+            if (index > -1) {
+              arr.splice(index, 1)
+              rev_changed = true
+            }
+          } else {
+            rev_changed = false
+          }
+
           break
         }
       }
     } else {
       if (version_val === current_val) {
-        rev_changed = false
+        if (remove_request) {
+          current_val = 'init_item'
+          rev_changed = true
+        } else {
+          rev_changed = false
+        }
       }
 
       arr.push(current_val)
     }
   }
 
-  if (rev_changed) {
+  if (rev_changed && !remove_request) {
     arr.push(version_val)
 
     if (arr.length > limit) {

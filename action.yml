@@ -27,10 +27,10 @@ inputs:
     required: true
     default: 350
 
-  need_to_update:
-    description: 'Need to update revisiob journal'
+  remove_request:
+    description: 'Need to remove detected revision'
     required: true
-    default: true
+    default: false
 
 # Define your outputs here.
 outputs:
