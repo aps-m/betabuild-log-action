@@ -28997,27 +28997,45 @@ function ArrToStr(array) {
     }
     return result;
 }
-function HandleStore(current_val, version_val, limit = 150) {
+function HandleStore(current_val, version_val, limit = 150, remove_request = false) {
     let rev_changed = true;
+    if (remove_request) {
+        rev_changed = false;
+    }
     let arr = [];
     if (current_val !== '') {
         if (current_val.search(';') !== -1) {
             arr = current_val.split(';');
             for (const item of arr) {
                 if (version_val === item) {
-                    rev_changed = false;
+                    if (remove_request) {
+                        const index = arr.indexOf(item, 0);
+                        if (index > -1) {
+                            arr.splice(index, 1);
+                            rev_changed = true;
+                        }
+                    }
+                    else {
+                        rev_changed = false;
+                    }
                     break;
                 }
             }
         }
         else {
             if (version_val === current_val) {
-                rev_changed = false;
+                if (remove_request) {
+                    current_val = 'init_item';
+                    rev_changed = true;
+                }
+                else {
+                    rev_changed = false;
+                }
             }
             arr.push(current_val);
         }
     }
-    if (rev_changed) {
+    if (rev_changed && !remove_request) {
         arr.push(version_val);
         if (arr.length > limit) {
             arr.shift();
@@ -29121,7 +29139,7 @@ async function run() {
         const var_name = core.getInput('var_name');
         const tag_name = core.getInput('tag_name');
         const size = Number(core.getInput('size'));
-        const need_to_update = core.getInput('need_to_update');
+        const remove_request = core.getInput('remove_request');
         const var_def_value = 'init_item';
         const repo_owner = github.context.payload.repository?.owner.login;
         const repo_name = github.context.payload.repository?.name;
@@ -29155,23 +29173,28 @@ async function run() {
                     core.setFailed(err);
                 });
             }
-            StoreResult = (0, betabuild_store_1.HandleStore)(VariableValue, tag_name, size);
+            StoreResult = (0, betabuild_store_1.HandleStore)(VariableValue, tag_name, size, remove_request.toLowerCase() === 'true');
             if (StoreResult.Rev_is_changed) {
-                console.log(`New revision was detected, flag need_to_update = ${need_to_update}`);
-                if (need_to_update.toLowerCase() === 'true') {
-                    console.log('Starting variable updating...');
-                    await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then(result => {
-                        // eslint-disable-next-line no-console
-                        if (result != null) {
-                            //console.log(result.data.value)
-                            console.log(`Variable "${var_name}" was updated succesfully!`);
-                        }
-                    }, err => {
-                        console.log('Error of update variable');
-                        console.log(err);
-                        core.setFailed(err);
-                    });
+                console.log(`Revision log is changed`);
+                if (remove_request.toLowerCase() === 'true') {
+                    console.log(`Request for delete existing revision...`);
                 }
+                else {
+                    console.log(`Request for add new revision...`);
+                }
+                // if (need_to_update.toLowerCase() === 'true') {
+                console.log('Starting variable updating...');
+                await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then(result => {
+                    // eslint-disable-next-line no-console
+                    if (result != null) {
+                        //console.log(result.data.value)
+                        console.log(`Variable "${var_name}" was updated succesfully!`);
+                    }
+                }, err => {
+                    console.log('Error of update variable');
+                    console.log(err);
+                    core.setFailed(err);
+                });
             }
             else {
                 console.log('Defined version already exist in revision array');
