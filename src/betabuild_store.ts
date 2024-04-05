@@ -19,7 +19,8 @@ export function HandleStore(
   current_val: string,
   version_val: string,
   limit = 150,
-  remove_request: boolean = false
+  remove_request: boolean = false,
+  tag_filter: string = ''
 ): any {
   let rev_changed = true
 
@@ -61,6 +62,13 @@ export function HandleStore(
     }
   }
 
+  if (
+    version_val === '' ||
+    (tag_filter !== '' && version_val.search(tag_filter) === -1)
+  ) {
+    rev_changed = false
+  }
+
   if (rev_changed && !remove_request) {
     arr.push(version_val)
 
@@ -76,3 +84,7 @@ export function HandleStore(
 
   return result
 }
+
+// console.log(
+//   HandleStore('1.0.0;1.2.3;1.3.4', '1.3.5-b8', 150, false, '-b').Value
+// )

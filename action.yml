@@ -32,6 +32,11 @@ inputs:
     required: true
     default: false
 
+  tag_filter:
+    description: 'Filter for tag'
+    required: true
+    default: '-b'
+
 # Define your outputs here.
 outputs:
   rev_is_changed:

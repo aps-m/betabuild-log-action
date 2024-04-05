@@ -15,6 +15,7 @@ export async function run(): Promise<void> {
     const tag_name: string = core.getInput('tag_name')
     const size: number = Number(core.getInput('size'))
     const remove_request = core.getInput('remove_request')
+    const tag_filter = core.getInput('tag_filter')
 
     const var_def_value = 'init_item'
 
@@ -30,7 +31,7 @@ export async function run(): Promise<void> {
       let VariableValue = ''
 
       await GetVariable(var_name, repo_token, repo_owner, repo_name).then(
-        result => {
+        (result: any) => {
           // eslint-disable-next-line no-console
           if (result != null) {
             //console.log(result.data.value)
@@ -39,8 +40,9 @@ export async function run(): Promise<void> {
             VariableValue = result.data.value
           }
         },
-        err => {
+        (err: any) => {
           console.log('Variable is no exist')
+          console.log(err)
         }
       )
 
@@ -52,7 +54,7 @@ export async function run(): Promise<void> {
           repo_owner,
           repo_name
         ).then(
-          result => {
+          (result: any) => {
             // eslint-disable-next-line no-console
             if (result != null) {
               //console.log(result.data.value)
@@ -63,7 +65,7 @@ export async function run(): Promise<void> {
               VariableValue = var_def_value
             }
           },
-          err => {
+          (err: any) => {
             console.log(`Error of create variable "${var_name}"`)
             console.log(err)
             core.setFailed(err)
@@ -75,7 +77,8 @@ export async function run(): Promise<void> {
         VariableValue,
         tag_name,
         size,
-        remove_request.toLowerCase() === 'true'
+        remove_request.toLowerCase() === 'true',
+        tag_filter
       )
 
       if (StoreResult.Rev_is_changed) {
@@ -96,14 +99,14 @@ export async function run(): Promise<void> {
           repo_owner,
           repo_name
         ).then(
-          result => {
+          (result: any) => {
             // eslint-disable-next-line no-console
             if (result != null) {
               //console.log(result.data.value)
               console.log(`Variable "${var_name}" was updated succesfully!`)
             }
           },
-          err => {
+          (err: any) => {
             console.log('Error of update variable')
             console.log(err)
             core.setFailed(err)

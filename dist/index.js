@@ -28997,7 +28997,7 @@ function ArrToStr(array) {
     }
     return result;
 }
-function HandleStore(current_val, version_val, limit = 150, remove_request = false) {
+function HandleStore(current_val, version_val, limit = 150, remove_request = false, tag_filter = '') {
     let rev_changed = true;
     if (remove_request) {
         rev_changed = false;
@@ -29035,6 +29035,10 @@ function HandleStore(current_val, version_val, limit = 150, remove_request = fal
             arr.push(current_val);
         }
     }
+    if (version_val === '' ||
+        (tag_filter !== '' && version_val.search(tag_filter) === -1)) {
+        rev_changed = false;
+    }
     if (rev_changed && !remove_request) {
         arr.push(version_val);
         if (arr.length > limit) {
@@ -29048,6 +29052,9 @@ function HandleStore(current_val, version_val, limit = 150, remove_request = fal
     return result;
 }
 exports.HandleStore = HandleStore;
+// console.log(
+//   HandleStore('1.0.0;1.2.3;1.3.4', '1.3.5-b8', 150, false, '-b').Value
+// )
 
 
 /***/ }),
@@ -29140,6 +29147,7 @@ async function run() {
         const tag_name = core.getInput('tag_name');
         const size = Number(core.getInput('size'));
         const remove_request = core.getInput('remove_request');
+        const tag_filter = core.getInput('tag_filter');
         const var_def_value = 'init_item';
         const repo_owner = github.context.payload.repository?.owner.login;
         const repo_name = github.context.payload.repository?.name;
@@ -29148,7 +29156,7 @@ async function run() {
         if (repo_owner !== undefined && repo_name !== undefined) {
             let VariableIsExist = false;
             let VariableValue = '';
-            await (0, github_varapi_1.GetVariable)(var_name, repo_token, repo_owner, repo_name).then(result => {
+            await (0, github_varapi_1.GetVariable)(var_name, repo_token, repo_owner, repo_name).then((result) => {
                 // eslint-disable-next-line no-console
                 if (result != null) {
                     //console.log(result.data.value)
@@ -29156,24 +29164,25 @@ async function run() {
                     VariableIsExist = true;
                     VariableValue = result.data.value;
                 }
-            }, err => {
+            }, (err) => {
                 console.log('Variable is no exist');
+                console.log(err);
             });
             if (!VariableIsExist) {
-                await (0, github_varapi_1.CreateVariable)(var_name, var_def_value, repo_token, repo_owner, repo_name).then(result => {
+                await (0, github_varapi_1.CreateVariable)(var_name, var_def_value, repo_token, repo_owner, repo_name).then((result) => {
                     // eslint-disable-next-line no-console
                     if (result != null) {
                         //console.log(result.data.value)
                         console.log(`Variable "${var_name}" was created with value "${var_def_value}"!`);
                         VariableValue = var_def_value;
                     }
-                }, err => {
+                }, (err) => {
                     console.log(`Error of create variable "${var_name}"`);
                     console.log(err);
                     core.setFailed(err);
                 });
             }
-            StoreResult = (0, betabuild_store_1.HandleStore)(VariableValue, tag_name, size, remove_request.toLowerCase() === 'true');
+            StoreResult = (0, betabuild_store_1.HandleStore)(VariableValue, tag_name, size, remove_request.toLowerCase() === 'true', tag_filter);
             if (StoreResult.Rev_is_changed) {
                 console.log(`Revision log is changed`);
                 if (remove_request.toLowerCase() === 'true') {
@@ -29184,13 +29193,13 @@ async function run() {
                 }
                 // if (need_to_update.toLowerCase() === 'true') {
                 console.log('Starting variable updating...');
-                await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then(result => {
+                await (0, github_varapi_1.UpdateVariable)(StoreResult.Value, var_name, repo_token, repo_owner, repo_name).then((result) => {
                     // eslint-disable-next-line no-console
                     if (result != null) {
                         //console.log(result.data.value)
                         console.log(`Variable "${var_name}" was updated succesfully!`);
                     }
-                }, err => {
+                }, (err) => {
                     console.log('Error of update variable');
                     console.log(err);
                     core.setFailed(err);
