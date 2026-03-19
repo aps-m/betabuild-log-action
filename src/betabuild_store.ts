@@ -15,13 +15,18 @@ function ArrToStr(array: string[]): string {
   return result
 }
 
+export interface HandleStoreResult {
+  Rev_is_changed: boolean
+  Value: string
+}
+
 export function HandleStore(
   current_val: string,
   version_val: string,
   limit = 150,
-  remove_request: boolean = false,
-  tag_filter: string = ''
-): any {
+  remove_request = false,
+  tag_filter = ''
+): HandleStoreResult {
   let rev_changed = true
 
   if (remove_request) {

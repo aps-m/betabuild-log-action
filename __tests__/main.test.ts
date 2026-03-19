@@ -1,89 +1,101 @@
-/**
- * Unit tests for the action's main functionality, src/main.ts
- *
- * These should be run as if the action was called from a workflow.
- * Specifically, the inputs listed in `action.yml` should be set as environment
- * variables following the pattern `INPUT_<INPUT_NAME>`.
- */
-
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 import * as main from '../src/main'
+import {
+  CreateVariable,
+  GetVariable,
+  UpdateVariable
+} from '../src/github_varapi'
+
+jest.mock('../src/github_varapi', () => ({
+  CreateVariable: jest.fn(),
+  GetVariable: jest.fn(),
+  UpdateVariable: jest.fn()
+}))
 
 // Mock the action's main function
 const runMock = jest.spyOn(main, 'run')
 
-// Other utilities
-const timeRegex = /^\d{2}:\d{2}:\d{2}/
-
 // Mock the GitHub Actions core library
-let debugMock: jest.SpiedFunction<typeof core.debug>
-let errorMock: jest.SpiedFunction<typeof core.error>
-let getInputMock: jest.SpiedFunction<typeof core.getInput>
 let setFailedMock: jest.SpiedFunction<typeof core.setFailed>
 let setOutputMock: jest.SpiedFunction<typeof core.setOutput>
+const createVariableMock = jest.mocked(CreateVariable)
+const getVariableMock = jest.mocked(GetVariable)
+const updateVariableMock = jest.mocked(UpdateVariable)
 
 describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
-    debugMock = jest.spyOn(core, 'debug').mockImplementation()
-    errorMock = jest.spyOn(core, 'error').mockImplementation()
-    getInputMock = jest.spyOn(core, 'getInput').mockImplementation()
+    jest.spyOn(core, 'getInput').mockImplementation(name => {
+      switch (name) {
+        case 'repo_token':
+          return 'token'
+        case 'var_name':
+          return 'REV'
+        case 'tag_name':
+          return '1.1.0'
+        case 'size':
+          return '5'
+        case 'remove_request':
+          return 'false'
+        case 'tag_filter':
+          return ''
+        default:
+          return ''
+      }
+    })
     setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation()
     setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
+
+    github.context.payload.repository = {
+      owner: {
+        login: 'octocat'
+      },
+      name: 'hello-world'
+    }
   })
 
-  it('sets the time output', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation(name => {
-      switch (name) {
-        case 'milliseconds':
-          return '500'
-        default:
-          return ''
+  it('updates the repository variable when a new revision is added', async () => {
+    getVariableMock.mockResolvedValue({
+      data: {
+        value: '1.0.0'
       }
     })
+    updateVariableMock.mockResolvedValue({})
 
     await main.run()
     expect(runMock).toHaveReturned()
 
-    // Verify that all of the core library functions were called correctly
-    expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
-    expect(debugMock).toHaveBeenNthCalledWith(
-      2,
-      expect.stringMatching(timeRegex)
+    expect(getVariableMock).toHaveBeenCalledWith(
+      'REV',
+      'token',
+      'octocat',
+      'hello-world'
     )
-    expect(debugMock).toHaveBeenNthCalledWith(
-      3,
-      expect.stringMatching(timeRegex)
+    expect(createVariableMock).not.toHaveBeenCalled()
+    expect(updateVariableMock).toHaveBeenCalledWith(
+      '1.0.0;1.1.0',
+      'REV',
+      'token',
+      'octocat',
+      'hello-world'
     )
-    expect(setOutputMock).toHaveBeenNthCalledWith(
-      1,
-      'time',
-      expect.stringMatching(timeRegex)
-    )
-    expect(errorMock).not.toHaveBeenCalled()
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'rev_is_changed', true)
+    expect(setFailedMock).not.toHaveBeenCalled()
   })
 
-  it('sets a failed status', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation(name => {
-      switch (name) {
-        case 'milliseconds':
-          return 'this is not a number'
-        default:
-          return ''
-      }
-    })
+  it('fails when repository context is unavailable', async () => {
+    github.context.payload.repository = undefined
 
     await main.run()
     expect(runMock).toHaveReturned()
 
-    // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(
       1,
-      'milliseconds not a number'
+      'Cannot get repo name and owner'
     )
-    expect(errorMock).not.toHaveBeenCalled()
+    expect(getVariableMock).not.toHaveBeenCalled()
+    expect(setOutputMock).not.toHaveBeenCalled()
   })
 })

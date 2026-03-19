@@ -18,7 +18,7 @@
 | tag_name       | Значение версии для добавления в журнал                             | Строка  | Да           | -                     |
 | size           | Максимальный размер массива журнала                                 | Число   | Да           | 350                   |
 | remove_request | Флаг удаления указанной версии из лога                              | boolean | Да           | false                 |
-| tag_filter     | Строка, которая должна содержаться в тэге, чтобы действие сработало | Строка  | Да           | -b                  |
+| tag_filter     | Строка, которая должна содержаться в тэге, чтобы действие сработало | Строка  | Да           | -b                    |
 
 ### Выход
 
@@ -28,11 +28,10 @@
 
 ## Примеры использования
 
-```
-
+```yml
 - name: Store beta build revision
   id: store_revision
-  uses: aps-m/betabuild-log-action@v4
+  uses: aps-m/betabuild-log-action@v5
   with:
     repo_token: ${{ secrets.REPO_TOKEN }}
     var_name: 'REV'
@@ -43,5 +42,4 @@
 
 - name: Check output
   run: echo ${{ steps.store_revision.outputs.rev_is_changed }}
-
 ```

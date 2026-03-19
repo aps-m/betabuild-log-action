@@ -1,8 +1,16 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 
+import { HandleStore, type HandleStoreResult } from './betabuild_store'
 import { CreateVariable, GetVariable, UpdateVariable } from './github_varapi'
-import { HandleStore } from './betabuild_store'
+
+function GetErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return String(error)
+}
 
 /**
  * The main function for the action.
@@ -10,113 +18,108 @@ import { HandleStore } from './betabuild_store'
  */
 export async function run(): Promise<void> {
   try {
-    const repo_token: string = core.getInput('repo_token')
-    const var_name: string = core.getInput('var_name')
-    const tag_name: string = core.getInput('tag_name')
-    const size: number = Number(core.getInput('size'))
+    const repo_token = core.getInput('repo_token')
+    const var_name = core.getInput('var_name')
+    const tag_name = core.getInput('tag_name')
+    const size = Number(core.getInput('size'))
     const remove_request = core.getInput('remove_request')
     const tag_filter = core.getInput('tag_filter')
+    const shouldRemove = remove_request.toLowerCase() === 'true'
 
     const var_def_value = 'init_item'
 
     const repo_owner = github.context.payload.repository?.owner.login
     const repo_name = github.context.payload.repository?.name
 
-    let StoreResult: any
+    if (Number.isNaN(size)) {
+      core.setFailed('Input "size" must be a number')
+      return
+    }
 
-    //let result
+    if (repo_owner === undefined || repo_name === undefined) {
+      core.setFailed('Cannot get repo name and owner')
+      return
+    }
 
-    if (repo_owner !== undefined && repo_name !== undefined) {
-      let VariableIsExist = false
-      let VariableValue = ''
+    let VariableIsExist = false
+    let VariableValue = ''
 
-      await GetVariable(var_name, repo_token, repo_owner, repo_name).then(
-        (result: any) => {
-          // eslint-disable-next-line no-console
-          if (result != null) {
-            //console.log(result.data.value)
-            console.log(`Variable value is ${result.data.value}`)
-            VariableIsExist = true
-            VariableValue = result.data.value
-          }
-        },
-        (err: any) => {
-          console.log('Variable is no exist')
-          console.log(err)
-        }
+    try {
+      const result = await GetVariable(
+        var_name,
+        repo_token,
+        repo_owner,
+        repo_name
       )
 
-      if (!VariableIsExist) {
+      console.log(`Variable value is ${result.data.value}`)
+      VariableIsExist = true
+      VariableValue = result.data.value
+    } catch (error: unknown) {
+      console.log('Variable does not exist')
+      console.log(error)
+    }
+
+    if (!VariableIsExist) {
+      try {
         await CreateVariable(
           var_name,
           var_def_value,
           repo_token,
           repo_owner,
           repo_name
-        ).then(
-          (result: any) => {
-            // eslint-disable-next-line no-console
-            if (result != null) {
-              //console.log(result.data.value)
-              console.log(
-                `Variable "${var_name}" was created with value "${var_def_value}"!`
-              )
-
-              VariableValue = var_def_value
-            }
-          },
-          (err: any) => {
-            console.log(`Error of create variable "${var_name}"`)
-            console.log(err)
-            core.setFailed(err)
-          }
         )
+
+        console.log(
+          `Variable "${var_name}" was created with value "${var_def_value}"!`
+        )
+
+        VariableValue = var_def_value
+      } catch (error: unknown) {
+        console.log(`Error of create variable "${var_name}"`)
+        console.log(error)
+        core.setFailed(GetErrorMessage(error))
+        return
+      }
+    }
+
+    const StoreResult: HandleStoreResult = HandleStore(
+      VariableValue,
+      tag_name,
+      size,
+      shouldRemove,
+      tag_filter
+    )
+
+    if (StoreResult.Rev_is_changed) {
+      console.log('Revision log is changed')
+
+      if (shouldRemove) {
+        console.log('Request for delete existing revision...')
+      } else {
+        console.log('Request for add new revision...')
       }
 
-      StoreResult = HandleStore(
-        VariableValue,
-        tag_name,
-        size,
-        remove_request.toLowerCase() === 'true',
-        tag_filter
-      )
+      console.log('Starting variable updating...')
 
-      if (StoreResult.Rev_is_changed) {
-        console.log(`Revision log is changed`)
-
-        if (remove_request.toLowerCase() === 'true') {
-          console.log(`Request for delete existing revision...`)
-        } else {
-          console.log(`Request for add new revision...`)
-        }
-
-        // if (need_to_update.toLowerCase() === 'true') {
-        console.log('Starting variable updating...')
+      try {
         await UpdateVariable(
           StoreResult.Value,
           var_name,
           repo_token,
           repo_owner,
           repo_name
-        ).then(
-          (result: any) => {
-            // eslint-disable-next-line no-console
-            if (result != null) {
-              //console.log(result.data.value)
-              console.log(`Variable "${var_name}" was updated succesfully!`)
-            }
-          },
-          (err: any) => {
-            console.log('Error of update variable')
-            console.log(err)
-            core.setFailed(err)
-          }
         )
-      } else {
-        console.log('Defined version already exist in revision array')
+
+        console.log(`Variable "${var_name}" was updated succesfully!`)
+      } catch (error: unknown) {
+        console.log('Error of update variable')
+        console.log(error)
+        core.setFailed(GetErrorMessage(error))
+        return
       }
     } else {
-      core.setFailed('Cannot get repo name and owner')
+      console.log('Defined version already exist in revision array')
     }
 
     console.log(

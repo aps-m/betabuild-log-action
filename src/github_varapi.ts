@@ -2,13 +2,19 @@
 
 import { Octokit } from '@octokit/core'
 
-export function CreateVariable(
+export interface GitHubVariableResponse {
+  data: {
+    value: string
+  }
+}
+
+export async function CreateVariable(
   var_name: string,
   data: string,
   token: string,
   owner: string,
   repository: string
-) {
+): Promise<unknown> {
   const octokit = new Octokit({ auth: token })
 
   return octokit.request(
@@ -23,13 +29,13 @@ export function CreateVariable(
   )
 }
 
-export function UpdateVariable(
+export async function UpdateVariable(
   data: string,
   var_name: string,
   token: string,
   owner: string,
   repository: string
-) {
+): Promise<unknown> {
   const octokit = new Octokit({ auth: token })
 
   return octokit.request(
@@ -43,12 +49,12 @@ export function UpdateVariable(
   )
 }
 
-export function GetVariable(
+export async function GetVariable(
   var_name: string,
   token: string,
   owner_str: string,
   repository: string
-) {
+): Promise<GitHubVariableResponse> {
   const octokit = new Octokit({ auth: token })
 
   return octokit.request(
@@ -58,5 +64,5 @@ export function GetVariable(
         'X-GitHub-Api-Version': '2022-11-28'
       }
     }
-  )
+  ) as Promise<GitHubVariableResponse>
 }
