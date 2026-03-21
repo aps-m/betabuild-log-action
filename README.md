@@ -31,7 +31,7 @@
 ```yml
 - name: Store beta build revision
   id: store_revision
-  uses: aps-m/betabuild-log-action@v5
+  uses: aps-m/betabuild-log-action@v6
   with:
     repo_token: ${{ secrets.REPO_TOKEN }}
     var_name: 'REV'
