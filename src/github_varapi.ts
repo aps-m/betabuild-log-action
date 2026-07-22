@@ -1,6 +1,4 @@
-// import * as github from '@actions/github'
-
-import { Octokit } from '@octokit/core'
+import * as github from '@actions/github'
 
 export interface GitHubVariableResponse {
   data: {
@@ -15,7 +13,7 @@ export async function CreateVariable(
   owner: string,
   repository: string
 ): Promise<unknown> {
-  const octokit = new Octokit({ auth: token })
+  const octokit = github.getOctokit(token)
 
   return octokit.request(
     `POST /repos/${owner}/${repository}/actions/variables`,
@@ -36,7 +34,7 @@ export async function UpdateVariable(
   owner: string,
   repository: string
 ): Promise<unknown> {
-  const octokit = new Octokit({ auth: token })
+  const octokit = github.getOctokit(token)
 
   return octokit.request(
     `PATCH /repos/${owner}/${repository}/actions/variables/${var_name}`,
@@ -55,7 +53,7 @@ export async function GetVariable(
   owner_str: string,
   repository: string
 ): Promise<GitHubVariableResponse> {
-  const octokit = new Octokit({ auth: token })
+  const octokit = github.getOctokit(token)
 
   return octokit.request(
     `GET /repos/${owner_str}/${repository}/actions/variables/${var_name}`,

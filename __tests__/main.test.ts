@@ -7,6 +7,10 @@ import {
   UpdateVariable
 } from '../src/github_varapi'
 
+jest.mock('@actions/github', () => ({
+  context: { payload: {} }
+}))
+
 jest.mock('../src/github_varapi', () => ({
   CreateVariable: jest.fn(),
   GetVariable: jest.fn(),

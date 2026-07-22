@@ -4,6 +4,10 @@
 
 import * as main from '../src/main'
 
+jest.mock('@actions/github', () => ({
+  context: { payload: {} }
+}))
+
 // Mock the action's entrypoint
 const runMock = jest.spyOn(main, 'run').mockImplementation()
 
